@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Home from './pages/Home';
+import Profile from './pages/Profile';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
@@ -23,6 +24,7 @@ function App() {
         <Route path="/" element={isLoggedIn ? <Home /> : <Navigate to="/login" />} />
         <Route path="/login" element={isLoggedIn ? <Navigate to="/" /> : <Login />} />
         <Route path="/register" element={isLoggedIn ? <Navigate to="/" /> : <Register />} />
+        <Route path="/profile" element={isLoggedIn ? <Profile /> : <Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
   );

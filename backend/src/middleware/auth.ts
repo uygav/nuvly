@@ -20,6 +20,4 @@ export const requireAuth = (req:Request , res:Response, next:NextFunction)=>{
     catch{
         res.status(401).json({message: " unvalid token"})
     }
-
-
 }

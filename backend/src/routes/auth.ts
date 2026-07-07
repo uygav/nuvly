@@ -47,7 +47,7 @@ router.post('/login', async ( req:Request, res:Response)=> {
         return
     }
 
-    const token = jwt.sign({userId:user.id},  JWT_SECRET, {expiresIn:'7d'})
+    const token = jwt.sign({userId:user.id},  JWT_SECRET, {expiresIn:'7d'}) //its like an id card that includes userid,token,expiresdate
 
     res.cookie('token', token, {
         httpOnly:true,
@@ -65,7 +65,7 @@ router.post('/logout', (req:Request, res,Response)=> {
 
 // ME
 router.get('/me', requireAuth, async (req: Request, res: Response) => {
-  const result = await db.query('SELECT id, email, created_at FROM users WHERE id = $1', [(req as any).userId]);
+  const result = await db.query('SELECT id, email,bio, profile_picture, created_at FROM users WHERE id = $1', [(req as any).userId]);
   res.json(result.rows[0]);
 });
     
