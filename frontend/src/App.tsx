@@ -4,6 +4,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
+import ProductSettings from './pages/ProductSettings';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
@@ -25,6 +26,7 @@ function App() {
         <Route path="/login" element={isLoggedIn ? <Navigate to="/" /> : <Login />} />
         <Route path="/register" element={isLoggedIn ? <Navigate to="/" /> : <Register />} />
         <Route path="/profile" element={isLoggedIn ? <Profile /> : <Navigate to="/login" />} />
+        <Route path="/products/settings" element={isLoggedIn ? <ProductSettings /> : <Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
   );

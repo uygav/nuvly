@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express'
 import { db } from '../index'
 import { requireAuth } from '../middleware/auth'
+import { upload } from '../middleware/upload'
 
 const router = Router()
 
@@ -14,13 +15,15 @@ router.get('/mine', requireAuth, async (req: Request, res: Response) => {
 })
 
 // CREATE
-router.post('/', requireAuth, async (req: Request, res: Response) => {
-    const { name, description, price, image_url } = req.body
+router.post('/', requireAuth, upload.single('image'), async (req: Request, res: Response) => {
+    const { name, description, price } = req.body
 
     if(!name || !price){
         res.status(400).json({message: 'name and price are required'})
         return
     }
+
+    const image_url = req.file ? `http://localhost:3001/uploads/${req.file.filename}` : null
 
     const result = await db.query(
         'INSERT INTO products (user_id, name, description, price, image_url) VALUES ($1,$2,$3,$4,$5) RETURNING *',
