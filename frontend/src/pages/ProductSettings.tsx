@@ -5,7 +5,7 @@ function ProductSettings() {
   const navigate = useNavigate();
 
   const [products, setProducts] = useState<
-    { id: number; name: string; price: string; image_url: string | null }[]
+    { id: number; name: string; description: string | null; price: string; image_url: string | null }[]
   >([]);
 
   const [name, setName] = useState('');
@@ -13,6 +13,8 @@ function ProductSettings() {
   const [price, setPrice] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -28,6 +30,34 @@ function ProductSettings() {
     setImagePreview(URL.createObjectURL(file));
   };
 
+  const handleEditClick = (product: typeof products[number]) => {
+    setEditingId(product.id);
+    setName(product.name);
+    setDescription(product.description ?? '');
+    setPrice(product.price);
+    setImagePreview(product.image_url);
+    setImageFile(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setName('');
+    setDescription('');
+    setPrice('');
+    setImageFile(null);
+    setImagePreview(null);
+  };
+
+  const handleDelete = async (id: number) => {
+    await fetch(`http://localhost:3001/products/${id}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+    setProducts(products.filter((p) => p.id !== id));
+    if (editingId === id) handleCancelEdit();
+    setDeleteTargetId(null);
+  };
+
   const handleSave = async () => {
     if (!name || !price) return;
 
@@ -37,18 +67,22 @@ function ProductSettings() {
     formData.append('price', price);
     if (imageFile) formData.append('image', imageFile);
 
-    const res = await fetch('http://localhost:3001/products', {
-      method: 'POST',
-      credentials: 'include',
-      body: formData,
-    });
-    const newProduct = await res.json();
-    setProducts([newProduct, ...products]);
-    setName('');
-    setDescription('');
-    setPrice('');
-    setImageFile(null);
-    setImagePreview(null);
+    const res = await fetch(
+      editingId ? `http://localhost:3001/products/${editingId}` : 'http://localhost:3001/products',
+      {
+        method: editingId ? 'PATCH' : 'POST',
+        credentials: 'include',
+        body: formData,
+      }
+    );
+    const savedProduct = await res.json();
+
+    if (editingId) {
+      setProducts(products.map((p) => (p.id === editingId ? savedProduct : p)));
+    } else {
+      setProducts([savedProduct, ...products]);
+    }
+    handleCancelEdit();
   };
 
   return (
@@ -85,6 +119,14 @@ function ProductSettings() {
                     </div>
                     <p className="font-semibold truncate">{product.name}</p>
                     <p className="text-blue-500 text-sm">${product.price}</p>
+                    <div className="flex gap-2 mt-2">
+                      <button onClick={() => handleEditClick(product)} className="text-xs text-blue-500 hover:underline">
+                        Edit
+                      </button>
+                      <button onClick={() => setDeleteTargetId(product.id)} className="text-xs text-red-500 hover:underline">
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -93,7 +135,7 @@ function ProductSettings() {
 
           {/* Right side - Add Product */}
           <div className="bg-white p-8 rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold mb-6">Add Product</h2>
+            <h2 className="text-2xl font-bold mb-6">{editingId ? 'Edit Product' : 'Add Product'}</h2>
 
             <div className="flex flex-col gap-4">
               <div>
@@ -141,16 +183,36 @@ function ProductSettings() {
                 />
               </div>
 
-              <button
-                onClick={handleSave}
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 mt-2"
-              >
-                Save
-              </button>
+              <div className="flex gap-2 mt-2">
+                <button onClick={handleSave} className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">
+                  {editingId ? 'Update' : 'Save'}
+                </button>
+                {editingId && (
+                  <button onClick={handleCancelEdit} className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">
+                    Cancel
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      {deleteTargetId !== null && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-80">
+            <p className="text-gray-700 mb-4">Are you sure you want to delete this product?</p>
+            <div className="flex justify-end gap-2">
+              <button onClick={() => setDeleteTargetId(null)} className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">
+                Cancel
+              </button>
+              <button onClick={() => handleDelete(deleteTargetId)} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

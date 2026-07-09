@@ -32,4 +32,41 @@ router.post('/', requireAuth, upload.single('image'), async (req: Request, res: 
     res.status(201).json(result.rows[0])
 })
 
+// UPDATE
+router.patch('/:id', requireAuth, upload.single('image'), async (req: Request, res: Response) => {
+    const { name, description, price } = req.body
+
+    const existing = await db.query(
+        'SELECT * FROM products WHERE id = $1 AND user_id = $2',
+        [req.params.id, (req as any).userId]
+    )
+    if (existing.rows.length === 0) {
+        res.status(404).json({ message: 'product not found' })
+        return
+    }
+
+    const image_url = req.file ? `http://localhost:3001/uploads/${req.file.filename}` : existing.rows[0].image_url
+
+    const result = await db.query(
+        'UPDATE products SET name = $1, description = $2, price = $3, image_url = $4 WHERE id = $5 AND user_id = $6 RETURNING *',
+        [name, description, price, image_url, req.params.id, (req as any).userId]
+    )
+    res.json(result.rows[0])
+})
+
+// DELETE
+router.delete('/:id', requireAuth, async (req: Request, res: Response) => {
+    const result = await db.query(
+        'DELETE FROM products WHERE id = $1 AND user_id = $2 RETURNING *',
+        [req.params.id, (req as any).userId]
+    )
+
+    if (result.rows.length === 0) {
+        res.status(404).json({ message: 'product not found' })
+        return
+    }
+
+    res.json({ message: 'product deleted' })
+})
+
 export default router
