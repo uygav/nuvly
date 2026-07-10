@@ -26,6 +26,12 @@ function Home() {
       {/* Top Bar */}
       <div className="flex justify-end gap-4 p-8">
         <button
+          onClick={() => navigate('/search')}
+          className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
+        >
+          Search
+        </button>
+        <button
           onClick={() => navigate('/profile')}
           className="bg-blue-500 text-white px-4 py-2 rounded"
         >

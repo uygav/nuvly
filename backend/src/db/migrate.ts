@@ -10,6 +10,7 @@ const createTables = `
     id         SERIAL PRIMARY KEY,
     email      VARCHAR(255) UNIQUE NOT NULL,
     password   VARCHAR(255) NOT NULL,
+    username   VARCHAR(255) UNIQUE,
     bio        TEXT,
     profile_picture     TEXT,
     created_at TIMESTAMP DEFAULT NOW()
@@ -17,6 +18,7 @@ const createTables = `
 
   ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT;
   ALTER TABLE users ADD COLUMN IF NOT EXISTS profile_picture  TEXT;
+  ALTER TABLE users ADD COLUMN IF NOT EXISTS username VARCHAR(255) UNIQUE;
 
   CREATE TABLE IF NOT EXISTS products (
     id          SERIAL PRIMARY KEY,

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 function Register() {
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ function Register() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, username, password }),
     });
 
     const data = await res.json();
@@ -31,6 +32,13 @@ function Register() {
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-80">
         <h1 className="text-2xl font-bold text-center">Sign up</h1>
         {error && <p className="text-red-500 text-sm">{error}</p>}
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          className="border p-2 rounded"
+        />
         <input
           type="email"
           placeholder="Email"

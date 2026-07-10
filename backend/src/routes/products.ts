@@ -14,6 +14,15 @@ router.get('/mine', requireAuth, async (req: Request, res: Response) => {
     res.json(result.rows)
 })
 
+// GET BY USER (public)
+router.get('/user/:id', requireAuth, async (req: Request, res: Response) => {
+    const result = await db.query(
+        'SELECT id, name, description, price, image_url, created_at FROM products WHERE user_id = $1 ORDER BY created_at DESC',
+        [req.params.id]
+    )
+    res.json(result.rows)
+})
+
 // CREATE
 router.post('/', requireAuth, upload.single('image'), async (req: Request, res: Response) => {
     const { name, description, price } = req.body

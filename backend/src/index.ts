@@ -4,6 +4,7 @@ import { Pool } from 'pg';
 import cookieParser from 'cookie-parser'
 import authRouter from './routes/auth'
 import productsRouter from './routes/products'
+import usersRouter from './routes/users'
 import { requireAuth } from './middleware/auth';
 import cors from 'cors';
 
@@ -17,7 +18,7 @@ export const db = new Pool({
 
 // cors
 app.use(cors({
-  origin: 'http://localhost:5174',
+  origin: ['http://localhost:5173', 'http://localhost:5174'],
   credentials: true,
 }));
 
@@ -29,6 +30,7 @@ app.use('/uploads', express.static('uploads'))
 //auths
 app.use('/auth', authRouter)
 app.use('/products', productsRouter)
+app.use('/users', usersRouter)
 
 //middlewares
 app.get('/protected', requireAuth, (req, res) => {

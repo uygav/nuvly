@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 function Login() {
-  const [email, setEmail] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -14,7 +14,7 @@ function Login() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ identifier, password }),
     });
 
     const data = await res.json();
@@ -32,10 +32,10 @@ function Login() {
         <h1 className="text-2xl font-bold text-center">Sign in</h1>
         {error && <p className="text-red-500 text-sm">{error}</p>}
         <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          type="text"
+          placeholder="Email or username"
+          value={identifier}
+          onChange={(e) => setIdentifier(e.target.value)}
           className="border p-2 rounded"
         />
         <input

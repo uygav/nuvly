@@ -12,8 +12,13 @@ const JWT_SECRET = process.env.JWT_SECRET!
 
 // REGISTER 
 router.post('/register', async(req:Request, res:Response)=> {
-    
-    const {email, password} = req.body
+
+    const {email, username, password} = req.body
+
+    if (!username) {
+        res.status(400).json({message: 'username is required'})
+        return
+    }
 
     const existing = await db.query('SELECT id FROM users WHERE email = $1', [email])
     if(existing.rows.length>0){
@@ -21,20 +26,26 @@ router.post('/register', async(req:Request, res:Response)=> {
         return
     }
 
+    const existingUsername = await db.query('SELECT id FROM users WHERE username = $1', [username])
+    if(existingUsername.rows.length>0){
+        res.status(400).json({message: 'this username is already taken'})
+        return
+    }
+
     const hashedPassword = await bcrypt.hash(password,10)
 
     await db.query(
-        'INSERT INTO users (email, password) VALUES ($1,$2)', [email, hashedPassword]
-    ) 
+        'INSERT INTO users (email, username, password) VALUES ($1,$2,$3)', [email, username, hashedPassword]
+    )
     res.status(201).json({message: "registration is successful"})
 })
 
 // LOGIN
 
 router.post('/login', async ( req:Request, res:Response)=> {
-  const {email, password} = req.body 
-  
-  const result = await db.query('SELECT * FROM users WHERE email = $1', [email])
+  const {identifier, password} = req.body
+
+  const result = await db.query('SELECT * FROM users WHERE email = $1 OR username = $1', [identifier])
   const user = result.rows[0]
 
   if(!user){
@@ -66,7 +77,7 @@ router.post('/logout', (req:Request, res,Response)=> {
 
 // ME
 router.get('/me', requireAuth, async (req: Request, res: Response) => {
-  const result = await db.query('SELECT id, email,bio, profile_picture, created_at FROM users WHERE id = $1', [(req as any).userId]);
+  const result = await db.query('SELECT id, email, username, bio, profile_picture, created_at FROM users WHERE id = $1', [(req as any).userId]);
   res.json(result.rows[0]);
 });
 

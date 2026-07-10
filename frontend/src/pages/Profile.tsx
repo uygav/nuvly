@@ -2,8 +2,9 @@ import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 function Profile() {
-  const [user, setUser] = useState<{ 
+  const [user, setUser] = useState<{
     email: string
+    username: string | null
     bio:string | null
     profile_picture:string | null } | null>(null);
   
@@ -148,6 +149,11 @@ function Profile() {
               </div>
               <input type="file" accept="image/*" ref={fileInputRef} onChange={handleFileChange} className="hidden" />
             </div>
+
+            {/* Username */}
+            {user?.username && (
+              <p className="text-center font-semibold">@{user.username}</p>
+            )}
 
             {/* Email */}
             {user && (
