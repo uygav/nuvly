@@ -1,15 +1,20 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import FollowListModal from '../components/FollowListModal';
 
 function UserProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [followModal, setFollowModal] = useState<'followers' | 'following' | null>(null);
 
   const [user, setUser] = useState<{
     email: string;
     username: string | null;
     bio: string | null;
     profile_picture: string | null;
+    followers_count: string;
+    following_count: string;
+    is_following: boolean;
   } | null>(null);
 
   const [products, setProducts] = useState<
@@ -27,6 +32,17 @@ function UserProfile() {
       .then((res) => res.json())
       .then((data) => setProducts(data));
   }, [id]);
+
+  const handleFollowToggle = async () => {
+    if (!user) return;
+    const method = user.is_following ? 'DELETE' : 'POST';
+    await fetch(`http://localhost:3001/users/${id}/follow`, { method, credentials: 'include' });
+    setUser({
+      ...user,
+      is_following: !user.is_following,
+      followers_count: String(Number(user.followers_count) + (user.is_following ? -1 : 1)),
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
@@ -90,6 +106,21 @@ function UserProfile() {
               </p>
             )}
 
+            {user && (
+              <div className="flex justify-center mb-6">
+                <button
+                  onClick={handleFollowToggle}
+                  className={
+                    user.is_following
+                      ? 'bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300'
+                      : 'bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600'
+                  }
+                >
+                  {user.is_following ? 'Unfollow' : 'Follow'}
+                </button>
+              </div>
+            )}
+
             <div className="text-center text-sm mb-6">
               {user?.bio ? (
                 <p className="text-gray-600 break-words">{user.bio}</p>
@@ -101,11 +132,21 @@ function UserProfile() {
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
                 <p className="text-gray-600 text-xs mb-1">Followers</p>
-                <p className="text-2xl font-bold text-blue-500">0</p>
+                <p
+                  onClick={() => setFollowModal('followers')}
+                  className="text-2xl font-bold text-blue-500 cursor-pointer hover:underline"
+                >
+                  {user?.followers_count ?? 0}
+                </p>
               </div>
               <div>
                 <p className="text-gray-600 text-xs mb-1">Following</p>
-                <p className="text-2xl font-bold text-blue-500">0</p>
+                <p
+                  onClick={() => setFollowModal('following')}
+                  className="text-2xl font-bold text-blue-500 cursor-pointer hover:underline"
+                >
+                  {user?.following_count ?? 0}
+                </p>
               </div>
               <div>
                 <p className="text-gray-600 text-xs mb-1">Products</p>
@@ -115,6 +156,10 @@ function UserProfile() {
           </div>
         </div>
       </div>
+
+      {followModal && id && (
+        <FollowListModal userId={id} type={followModal} onClose={() => setFollowModal(null)} />
+      )}
     </div>
   );
 }

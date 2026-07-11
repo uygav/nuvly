@@ -49,13 +49,13 @@ router.post('/login', async ( req:Request, res:Response)=> {
   const user = result.rows[0]
 
   if(!user){
-    res.status(401).json({message: 'email or password is wrong'})
+    res.status(401).json({message: 'email/username or password is wrong'})
     return
   }
 
   const isMatch = await bcrypt.compare(password, user.password)
     if(!isMatch){
-        res.status(401).json({message:'email or passoword is wrong'})
+        res.status(401).json({message:'email/username or passoword is wrong'})
         return
     }
 
@@ -77,7 +77,13 @@ router.post('/logout', (req:Request, res,Response)=> {
 
 // ME
 router.get('/me', requireAuth, async (req: Request, res: Response) => {
-  const result = await db.query('SELECT id, email, username, bio, profile_picture, created_at FROM users WHERE id = $1', [(req as any).userId]);
+  const result = await db.query(
+    `SELECT id, email, username, bio, profile_picture, created_at,
+       (SELECT COUNT(*) FROM follows WHERE following_id = users.id) AS followers_count,
+       (SELECT COUNT(*) FROM follows WHERE follower_id = users.id) AS following_count
+     FROM users WHERE id = $1`,
+    [(req as any).userId]
+  );
   res.json(result.rows[0]);
 });
 

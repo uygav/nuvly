@@ -1,12 +1,17 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import FollowListModal from '../components/FollowListModal';
 
 function Profile() {
   const [user, setUser] = useState<{
+    id: number
     email: string
     username: string | null
     bio:string | null
-    profile_picture:string | null } | null>(null);
+    profile_picture:string | null
+    followers_count: string
+    following_count: string } | null>(null);
+  const [followModal, setFollowModal] = useState<'followers' | 'following' | null>(null);
   
   const [products, setProducts] = useState<
     { 
@@ -201,12 +206,22 @@ function Profile() {
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
                 <p className="text-gray-600 text-xs mb-1">Followers</p>
-                <p className="text-2xl font-bold text-blue-500">0</p>
+                <p
+                  onClick={() => setFollowModal('followers')}
+                  className="text-2xl font-bold text-blue-500 cursor-pointer hover:underline"
+                >
+                  {user?.followers_count ?? 0}
+                </p>
               </div>
 
               <div>
                 <p className="text-gray-600 text-xs mb-1">Following</p>
-                <p className="text-2xl font-bold text-blue-500">0</p>
+                <p
+                  onClick={() => setFollowModal('following')}
+                  className="text-2xl font-bold text-blue-500 cursor-pointer hover:underline"
+                >
+                  {user?.following_count ?? 0}
+                </p>
               </div>
 
               <div>
@@ -217,6 +232,10 @@ function Profile() {
           </div>
         </div>
       </div>
+
+      {followModal && user && (
+        <FollowListModal userId={String(user.id)} type={followModal} onClose={() => setFollowModal(null)} />
+      )}
     </div>
   );
 }

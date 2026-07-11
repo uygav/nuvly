@@ -30,6 +30,13 @@ const createTables = `
     created_at  TIMESTAMP DEFAULT NOW()
   );
 
+  CREATE TABLE IF NOT EXISTS follows (
+    follower_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    following_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at   TIMESTAMP DEFAULT NOW(),
+    PRIMARY KEY (follower_id, following_id)
+  );
+
 `;
 
 async function migrate() {
