@@ -37,6 +37,13 @@ const createTables = `
     PRIMARY KEY (follower_id, following_id)
   );
 
+  CREATE TABLE IF NOT EXISTS likes (
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT NOW(),
+    PRIMARY KEY (user_id, product_id)
+  );
+
 `;
 
 async function migrate() {

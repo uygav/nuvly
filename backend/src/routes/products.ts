@@ -14,11 +14,49 @@ router.get('/mine', requireAuth, async (req: Request, res: Response) => {
     res.json(result.rows)
 })
 
+// LIKE
+router.post('/:id/like', requireAuth, async (req: Request, res: Response) => {
+    await db.query(
+        'INSERT INTO likes (user_id, product_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+        [(req as any).userId, req.params.id]
+    )
+    res.status(201).json({ message: 'liked' })
+})
+
+// UNLIKE
+router.delete('/:id/like', requireAuth, async (req: Request, res: Response) => {
+    await db.query(
+        'DELETE FROM likes WHERE user_id = $1 AND product_id = $2',
+        [(req as any).userId, req.params.id]
+    )
+    res.json({ message: 'unliked' })
+})
+
+// GET FEED (products from followed users)
+router.get('/feed', requireAuth, async (req: Request, res: Response) => {
+    const result = await db.query(
+        `SELECT p.id, p.name, p.description, p.price, p.image_url, p.created_at,
+                u.id AS user_id, u.username, u.profile_picture,
+                (SELECT COUNT(*) FROM likes WHERE product_id = p.id) AS likes_count,
+                EXISTS(SELECT 1 FROM likes WHERE product_id = p.id AND user_id = $1) AS is_liked
+         FROM products p
+         JOIN users u ON u.id = p.user_id
+         WHERE p.user_id IN (SELECT following_id FROM follows WHERE follower_id = $1)
+         ORDER BY p.created_at DESC`,
+        [(req as any).userId]
+    )
+    res.json(result.rows)
+})
+
 // GET BY USER (public)
 router.get('/user/:id', requireAuth, async (req: Request, res: Response) => {
     const result = await db.query(
-        'SELECT id, name, description, price, image_url, created_at FROM products WHERE user_id = $1 ORDER BY created_at DESC',
-        [req.params.id]
+        `SELECT p.id, p.name, p.description, p.price, p.image_url, p.created_at,
+                (SELECT COUNT(*) FROM likes WHERE product_id = p.id) AS likes_count,
+                EXISTS(SELECT 1 FROM likes WHERE product_id = p.id AND user_id = $2) AS is_liked
+         FROM products p
+         WHERE p.user_id = $1 ORDER BY p.created_at DESC`,
+        [req.params.id, (req as any).userId]
     )
     res.json(result.rows)
 })

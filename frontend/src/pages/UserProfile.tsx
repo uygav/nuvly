@@ -18,7 +18,7 @@ function UserProfile() {
   } | null>(null);
 
   const [products, setProducts] = useState<
-    { id: number; name: string; price: string; image_url: string | null }[]
+    { id: number; name: string; price: string; image_url: string | null; likes_count: string; is_liked: boolean }[]
   >([]);
 
   useEffect(() => {
@@ -32,6 +32,18 @@ function UserProfile() {
       .then((res) => res.json())
       .then((data) => setProducts(data));
   }, [id]);
+
+  const handleLikeToggle = async (product: { id: number; is_liked: boolean; likes_count: string }) => {
+    const method = product.is_liked ? 'DELETE' : 'POST';
+    await fetch(`http://localhost:3001/products/${product.id}/like`, { method, credentials: 'include' });
+    setProducts((prev) =>
+      prev.map((p) =>
+        p.id === product.id
+          ? { ...p, is_liked: !p.is_liked, likes_count: String(Number(p.likes_count) + (p.is_liked ? -1 : 1)) }
+          : p
+      )
+    );
+  };
 
   const handleFollowToggle = async () => {
     if (!user) return;
@@ -78,6 +90,12 @@ function UserProfile() {
                     </div>
                     <p className="font-semibold truncate">{product.name}</p>
                     <p className="text-blue-500 text-sm">${product.price}</p>
+                    <button
+                      onClick={() => handleLikeToggle(product)}
+                      className={`mt-1 flex items-center gap-1 text-xs ${product.is_liked ? 'text-red-500' : 'text-gray-400'}`}
+                    >
+                      {product.is_liked ? '♥' : '♡'} {product.likes_count}
+                    </button>
                   </div>
                 ))}
               </div>

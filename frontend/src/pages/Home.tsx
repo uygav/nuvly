@@ -1,8 +1,21 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+type FeedProduct = {
+  id: number;
+  name: string;
+  price: string;
+  image_url: string | null;
+  user_id: number;
+  username: string | null;
+  profile_picture: string | null;
+  likes_count: string;
+  is_liked: boolean;
+};
+
 function Home() {
   const [user, setUser] = useState<{ email: string } | null>(null);
+  const [feed, setFeed] = useState<FeedProduct[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -13,6 +26,24 @@ function Home() {
       .then((data) => setUser(data));
   }, []);
 
+  useEffect(() => {
+    fetch('http://localhost:3001/products/feed', { credentials: 'include' })
+      .then((res) => res.json())
+      .then((data) => setFeed(data));
+  }, []);
+
+  const handleLikeToggle = async (product: FeedProduct) => {
+    const method = product.is_liked ? 'DELETE' : 'POST';
+    await fetch(`http://localhost:3001/products/${product.id}/like`, { method, credentials: 'include' });
+    setFeed((prev) =>
+      prev.map((p) =>
+        p.id === product.id
+          ? { ...p, is_liked: !p.is_liked, likes_count: String(Number(p.likes_count) + (p.is_liked ? -1 : 1)) }
+          : p
+      )
+    );
+  };
+
   const handleLogout = async () => {
     await fetch('http://localhost:3001/auth/logout', {
       method: 'POST',
@@ -22,7 +53,7 @@ function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Top Bar */}
       <div className="flex justify-end gap-4 p-8">
         <button
@@ -45,10 +76,47 @@ function Home() {
         </button>
       </div>
 
-      {/* Welcome content */}
-      <div className="flex-1 flex flex-col items-center justify-center gap-4">
-        <h1 className="text-3xl font-bold">Welcome!</h1>
-        {user && <p className="text-gray-600">Logged in as: {user.email}</p>}
+      {/* Feed */}
+      <div className="max-w-5xl w-full mx-auto px-8 pb-8">
+        {feed.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-96 text-gray-400 gap-1">
+            <p>Your feed is empty</p>
+            <p className="text-sm">Follow people to see their products here</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-6">
+            {feed.map((product) => (
+              <div key={product.id} className="bg-white border rounded-lg p-4 shadow-sm">
+                <div
+                  onClick={() => navigate(`/profile/${product.user_id}`)}
+                  className="flex items-center gap-2 mb-3 cursor-pointer"
+                >
+                  {product.profile_picture ? (
+                    <img src={product.profile_picture} className="w-8 h-8 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-8 h-8 bg-gray-300 rounded-full" />
+                  )}
+                  <span className="text-sm font-semibold hover:underline">@{product.username}</span>
+                </div>
+                <div className="w-full h-40 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs mb-2 overflow-hidden">
+                  {product.image_url ? (
+                    <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                  ) : (
+                    'No Image'
+                  )}
+                </div>
+                <p className="font-semibold truncate">{product.name}</p>
+                <p className="text-blue-500 text-sm">${product.price}</p>
+                <button
+                  onClick={() => handleLikeToggle(product)}
+                  className={`mt-2 flex items-center gap-1 text-sm ${product.is_liked ? 'text-red-500' : 'text-gray-400'}`}
+                >
+                  {product.is_liked ? '♥' : '♡'} {product.likes_count}
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
