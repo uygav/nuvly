@@ -98,14 +98,22 @@ function Home() {
                   )}
                   <span className="text-sm font-semibold hover:underline">@{product.username}</span>
                 </div>
-                <div className="w-full h-40 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs mb-2 overflow-hidden">
+                <div
+                  onClick={() => navigate(`/products/${product.id}`)}
+                  className="w-full h-40 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs mb-2 overflow-hidden cursor-pointer"
+                >
                   {product.image_url ? (
                     <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
                   ) : (
                     'No Image'
                   )}
                 </div>
-                <p className="font-semibold truncate">{product.name}</p>
+                <p
+                  onClick={() => navigate(`/products/${product.id}`)}
+                  className="font-semibold truncate cursor-pointer hover:underline"
+                >
+                  {product.name}
+                </p>
                 <p className="text-blue-500 text-sm">${product.price}</p>
                 <button
                   onClick={() => handleLikeToggle(product)}

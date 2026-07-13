@@ -61,6 +61,27 @@ router.get('/user/:id', requireAuth, async (req: Request, res: Response) => {
     res.json(result.rows)
 })
 
+// GET BY ID (single product detail)
+router.get('/:id', requireAuth, async (req: Request, res: Response) => {
+    const result = await db.query(
+        `SELECT p.id, p.name, p.description, p.price, p.image_url, p.created_at,
+                u.id AS user_id, u.username, u.profile_picture,
+                (SELECT COUNT(*) FROM likes WHERE product_id = p.id) AS likes_count,
+                EXISTS(SELECT 1 FROM likes WHERE product_id = p.id AND user_id = $2) AS is_liked
+         FROM products p
+         JOIN users u ON u.id = p.user_id
+         WHERE p.id = $1`,
+        [req.params.id, (req as any).userId]
+    )
+
+    if (result.rows.length === 0) {
+        res.status(404).json({ message: 'product not found' })
+        return
+    }
+
+    res.json(result.rows[0])
+})
+
 // CREATE
 router.post('/', requireAuth, upload.single('image'), async (req: Request, res: Response) => {
     const { name, description, price } = req.body
