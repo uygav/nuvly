@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser'
 import authRouter from './routes/auth'
 import productsRouter from './routes/products'
 import usersRouter from './routes/users'
+import notificationsRouter from './routes/notifications'
 import { requireAuth } from './middleware/auth';
 import cors from 'cors';
 
@@ -31,6 +32,7 @@ app.use('/uploads', express.static('uploads'))
 app.use('/auth', authRouter)
 app.use('/products', productsRouter)
 app.use('/users', usersRouter)
+app.use('/notifications', notificationsRouter)
 
 //middlewares
 app.get('/protected', requireAuth, (req, res) => {

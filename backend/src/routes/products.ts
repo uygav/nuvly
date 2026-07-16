@@ -20,6 +20,15 @@ router.post('/:id/like', requireAuth, async (req: Request, res: Response) => {
         'INSERT INTO likes (user_id, product_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
         [(req as any).userId, req.params.id]
     )
+
+    const product = await db.query('SELECT user_id FROM products WHERE id = $1', [req.params.id])
+    if (product.rows.length > 0 && product.rows[0].user_id !== (req as any).userId) {
+        await db.query(
+            'INSERT INTO notifications (user_id, actor_id, type, product_id) VALUES ($1, $2, $3, $4)',
+            [product.rows[0].user_id, (req as any).userId, 'like', req.params.id]
+        )
+    }
+
     res.status(201).json({ message: 'liked' })
 })
 

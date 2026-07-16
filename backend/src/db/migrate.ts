@@ -44,6 +44,16 @@ const createTables = `
     PRIMARY KEY (user_id, product_id)
   );
 
+  CREATE TABLE IF NOT EXISTS notifications (
+    id         SERIAL PRIMARY KEY,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    actor_id   INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    type       VARCHAR(20) NOT NULL,
+    product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
+    is_read    BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT NOW()
+  );
+
 `;
 
 async function migrate() {

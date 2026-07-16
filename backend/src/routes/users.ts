@@ -50,6 +50,10 @@ router.post('/:id/follow', requireAuth, async (req: Request, res: Response) => {
     'INSERT INTO follows (follower_id, following_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
     [followerId, followingId]
   )
+  await db.query(
+    'INSERT INTO notifications (user_id, actor_id, type) VALUES ($1, $2, $3)',
+    [followingId, followerId, 'follow']
+  )
   res.status(201).json({ message: 'followed' })
 })
 

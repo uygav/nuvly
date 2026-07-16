@@ -16,6 +16,7 @@ type FeedProduct = {
 function Home() {
   const [user, setUser] = useState<{ email: string } | null>(null);
   const [feed, setFeed] = useState<FeedProduct[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -30,6 +31,12 @@ function Home() {
     fetch('http://localhost:3001/products/feed', { credentials: 'include' })
       .then((res) => res.json())
       .then((data) => setFeed(data));
+  }, []);
+
+  useEffect(() => {
+    fetch('http://localhost:3001/notifications/unread-count', { credentials: 'include' })
+      .then((res) => res.json())
+      .then((data) => setUnreadCount(data.count));
   }, []);
 
   const handleLikeToggle = async (product: FeedProduct) => {
@@ -56,6 +63,17 @@ function Home() {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Top Bar */}
       <div className="flex justify-end gap-4 p-8">
+        <button
+          onClick={() => navigate('/notifications')}
+          className="relative bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
+        >
+          🔔
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+              {unreadCount}
+            </span>
+          )}
+        </button>
         <button
           onClick={() => navigate('/search')}
           className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
