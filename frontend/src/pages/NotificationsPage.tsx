@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 type Notification = {
   id: number;
-  type: 'follow' | 'like';
+  type: 'follow' | 'like' | 'comment' | 'comment_like';
   is_read: boolean;
   product_id: number | null;
   product_name: string | null;
@@ -65,7 +65,13 @@ function NotificationsPage() {
                 )}
                 <p className="text-sm">
                   <span className="font-semibold">@{n.username}</span>{' '}
-                  {n.type === 'follow' ? 'seni takip etmeye başladı' : `ürününü beğendi: ${n.product_name}`}
+                  {n.type === 'follow'
+                    ? 'started following you'
+                    : n.type === 'like'
+                    ? `liked your product: ${n.product_name}`
+                    : n.type === 'comment'
+                    ? `commented on your product: ${n.product_name}`
+                    : `liked your comment on ${n.product_name}`}
                 </p>
               </div>
             ))}
