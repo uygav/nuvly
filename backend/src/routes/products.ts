@@ -14,6 +14,23 @@ router.get('/mine', requireAuth, async (req: Request, res: Response) => {
     res.json(result.rows)
 })
 
+// SEARCH
+router.get('/search', requireAuth, async (req: Request, res: Response) => {
+    const q = (req.query.q as string) || ''
+
+    const result = await db.query(
+        `SELECT p.id, p.name, p.price, p.image_url,
+                u.id AS user_id, u.username
+         FROM products p
+         JOIN users u ON u.id = p.user_id
+         WHERE p.name ILIKE $1
+         ORDER BY p.created_at DESC
+         LIMIT 20`,
+        [`%${q}%`]
+    )
+    res.json(result.rows)
+})
+
 // LIKE
 router.post('/:id/like', requireAuth, async (req: Request, res: Response) => {
     await db.query(
