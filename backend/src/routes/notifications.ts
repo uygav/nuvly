@@ -39,4 +39,19 @@ router.patch('/read-all', requireAuth, async (req: Request, res: Response) => {
     res.json({ message: 'marked as read' })
 })
 
+// DELETE
+router.delete('/:id', requireAuth, async (req: Request, res: Response) => {
+    const result = await db.query(
+        'DELETE FROM notifications WHERE id = $1 AND user_id = $2 RETURNING *',
+        [req.params.id, (req as any).userId]
+    )
+
+    if (result.rows.length === 0) {
+        res.status(404).json({ message: 'notification not found' })
+        return
+    }
+
+    res.json({ message: 'notification deleted' })
+})
+
 export default router

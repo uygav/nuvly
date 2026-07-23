@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { formatRelativeTime } from '../utils/time';
 
 type Product = {
   id: number;
@@ -183,6 +184,7 @@ function ProductDetail() {
                         <p className="text-sm">
                           <span className="font-semibold">@{c.username}</span> {c.content}
                         </p>
+                        <span className="text-xs text-gray-400">{formatRelativeTime(c.created_at)}</span>
                         <button
                           onClick={() => handleCommentLikeToggle(c)}
                           className={`text-xs flex items-center gap-1 mt-1 ${c.is_liked ? 'text-red-500' : 'text-gray-400'}`}

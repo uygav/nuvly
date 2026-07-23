@@ -10,6 +10,7 @@ type FeedProduct = {
   username: string | null;
   profile_picture: string | null;
   likes_count: string;
+  comments_count: string;
   is_liked: boolean;
 };
 
@@ -133,12 +134,15 @@ function Home() {
                   {product.name}
                 </p>
                 <p className="text-blue-500 text-sm">${product.price}</p>
-                <button
-                  onClick={() => handleLikeToggle(product)}
-                  className={`mt-2 flex items-center gap-1 text-sm ${product.is_liked ? 'text-red-500' : 'text-gray-400'}`}
-                >
-                  {product.is_liked ? '♥' : '♡'} {product.likes_count}
-                </button>
+                <div className="flex items-center gap-3 mt-2">
+                  <button
+                    onClick={() => handleLikeToggle(product)}
+                    className={`flex items-center gap-1 text-sm ${product.is_liked ? 'text-red-500' : 'text-gray-400'}`}
+                  >
+                    {product.is_liked ? '♥' : '♡'} {product.likes_count}
+                  </button>
+                  <span className="text-gray-400 text-sm">💬 {product.comments_count}</span>
+                </div>
               </div>
             ))}
           </div>

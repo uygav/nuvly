@@ -18,7 +18,15 @@ function UserProfile() {
   } | null>(null);
 
   const [products, setProducts] = useState<
-    { id: number; name: string; price: string; image_url: string | null; likes_count: string; is_liked: boolean }[]
+    {
+      id: number;
+      name: string;
+      price: string;
+      image_url: string | null;
+      likes_count: string;
+      comments_count: string;
+      is_liked: boolean;
+    }[]
   >([]);
 
   useEffect(() => {
@@ -98,12 +106,15 @@ function UserProfile() {
                       {product.name}
                     </p>
                     <p className="text-blue-500 text-sm">${product.price}</p>
-                    <button
-                      onClick={() => handleLikeToggle(product)}
-                      className={`mt-1 flex items-center gap-1 text-xs ${product.is_liked ? 'text-red-500' : 'text-gray-400'}`}
-                    >
-                      {product.is_liked ? '♥' : '♡'} {product.likes_count}
-                    </button>
+                    <div className="flex items-center gap-2 mt-1">
+                      <button
+                        onClick={() => handleLikeToggle(product)}
+                        className={`flex items-center gap-1 text-xs ${product.is_liked ? 'text-red-500' : 'text-gray-400'}`}
+                      >
+                        {product.is_liked ? '♥' : '♡'} {product.likes_count}
+                      </button>
+                      <span className="text-gray-400 text-xs">💬 {product.comments_count}</span>
+                    </div>
                   </div>
                 ))}
               </div>

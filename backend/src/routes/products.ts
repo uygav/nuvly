@@ -64,6 +64,7 @@ router.get('/feed', requireAuth, async (req: Request, res: Response) => {
         `SELECT p.id, p.name, p.description, p.price, p.image_url, p.created_at,
                 u.id AS user_id, u.username, u.profile_picture,
                 (SELECT COUNT(*) FROM likes WHERE product_id = p.id) AS likes_count,
+                (SELECT COUNT(*) FROM comments WHERE product_id = p.id) AS comments_count,
                 EXISTS(SELECT 1 FROM likes WHERE product_id = p.id AND user_id = $1) AS is_liked
          FROM products p
          JOIN users u ON u.id = p.user_id
@@ -79,6 +80,7 @@ router.get('/user/:id', requireAuth, async (req: Request, res: Response) => {
     const result = await db.query(
         `SELECT p.id, p.name, p.description, p.price, p.image_url, p.created_at,
                 (SELECT COUNT(*) FROM likes WHERE product_id = p.id) AS likes_count,
+                (SELECT COUNT(*) FROM comments WHERE product_id = p.id) AS comments_count,
                 EXISTS(SELECT 1 FROM likes WHERE product_id = p.id AND user_id = $2) AS is_liked
          FROM products p
          WHERE p.user_id = $1 ORDER BY p.created_at DESC`,

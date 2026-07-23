@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { formatRelativeTime } from '../utils/time';
 
 type Notification = {
   id: number;
   type: 'follow' | 'like' | 'comment' | 'comment_like';
   is_read: boolean;
+  created_at: string;
   product_id: number | null;
   product_name: string | null;
   actor_id: number;
@@ -23,6 +25,12 @@ function NotificationsPage() {
 
     fetch('http://localhost:3001/notifications/read-all', { method: 'PATCH', credentials: 'include' });
   }, []);
+
+  const handleDelete = async (n: Notification, e: React.MouseEvent) => {
+    e.stopPropagation();
+    await fetch(`http://localhost:3001/notifications/${n.id}`, { method: 'DELETE', credentials: 'include' });
+    setNotifications((prev) => prev.filter((x) => x.id !== n.id));
+  };
 
   const handleClick = (n: Notification) => {
     if (n.type === 'like' && n.product_id) {
@@ -73,6 +81,13 @@ function NotificationsPage() {
                     ? `commented on your product: ${n.product_name}`
                     : `liked your comment on ${n.product_name}`}
                 </p>
+                <span className="text-xs text-gray-400">{formatRelativeTime(n.created_at)}</span>
+                <button
+                  onClick={(e) => handleDelete(n, e)}
+                  className="text-gray-400 hover:text-red-500 text-xs ml-auto"
+                >
+                  ✕
+                </button>
               </div>
             ))}
           </div>

@@ -13,7 +13,7 @@ const createTables = `
     username   VARCHAR(255) UNIQUE,
     bio        TEXT,
     profile_picture     TEXT,
-    created_at TIMESTAMP DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW()
   );
 
   ALTER TABLE users ADD COLUMN IF NOT EXISTS bio TEXT;
@@ -27,20 +27,20 @@ const createTables = `
     description TEXT,
     price       NUMERIC(10,2) NOT NULL,
     image_url   TEXT,
-    created_at  TIMESTAMP DEFAULT NOW()
+    created_at  TIMESTAMPTZ DEFAULT NOW()
   );
 
   CREATE TABLE IF NOT EXISTS follows (
     follower_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     following_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    created_at   TIMESTAMP DEFAULT NOW(),
+    created_at   TIMESTAMPTZ DEFAULT NOW(),
     PRIMARY KEY (follower_id, following_id)
   );
 
   CREATE TABLE IF NOT EXISTS likes (
     user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-    created_at TIMESTAMP DEFAULT NOW(),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
     PRIMARY KEY (user_id, product_id)
   );
 
@@ -51,7 +51,7 @@ const createTables = `
     type       VARCHAR(20) NOT NULL,
     product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
     is_read    BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW()
   );
 
   CREATE TABLE IF NOT EXISTS comments (
@@ -59,13 +59,13 @@ const createTables = `
     product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
     user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     content    TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT NOW()
+    created_at TIMESTAMPTZ DEFAULT NOW()
   );
 
   CREATE TABLE IF NOT EXISTS comment_likes (
     user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     comment_id INTEGER NOT NULL REFERENCES comments(id) ON DELETE CASCADE,
-    created_at TIMESTAMP DEFAULT NOW(),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
     PRIMARY KEY (user_id, comment_id)
   );
 
