@@ -116,6 +116,35 @@ router.patch('/bio', requireAuth, async (req: Request, res: Response) => {
   res.json(result.rows[0])
 })
 
+// UPDATE PASSWORD
+router.patch('/password', requireAuth, async (req: Request, res: Response) => {
+  const { currentPassword, newPassword } = req.body
+
+  if (!currentPassword || !newPassword) {
+    res.status(400).json({ message: 'current and new password are required' })
+    return
+  }
+
+  const result = await db.query('SELECT password FROM users WHERE id = $1', [(req as any).userId])
+  const user = result.rows[0]
+
+  const isMatch = await bcrypt.compare(currentPassword, user.password)
+  if (!isMatch) {
+    res.status(401).json({ message: 'current password is wrong' })
+    return
+  }
+
+  if (currentPassword === newPassword) {
+    res.status(400).json({ message: 'new password must be different from current password' })
+    return
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10)
+  await db.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, (req as any).userId])
+
+  res.json({ message: 'password updated' })
+})
+
 export default router
 
 

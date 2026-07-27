@@ -28,6 +28,7 @@ function ProductSettings() {
     if (!file) return;
     setImageFile(file);
     setImagePreview(URL.createObjectURL(file));
+    
   };
 
   const handleEditClick = (product: typeof products[number]) => {

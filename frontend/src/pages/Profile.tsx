@@ -25,6 +25,10 @@ function Profile() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [bioDraft, setBioDraft] = useState('');
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   const handleSaveBio = async () => {
     const res = await fetch('http://localhost:3001/auth/bio', {
@@ -36,6 +40,24 @@ function Profile() {
     const data = await res.json();
     setUser(data);
     setIsEditingBio(false);
+  };
+
+  const handleChangePassword = async () => {
+    setPasswordError('');
+    const res = await fetch('http://localhost:3001/auth/password', {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ currentPassword, newPassword }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setCurrentPassword('');
+      setNewPassword('');
+      setIsChangingPassword(false);
+    } else {
+      setPasswordError(data.message);
+    }
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -166,6 +188,49 @@ function Profile() {
                 {user.email}
               </p>
             )}
+
+            {/* Change Password */}
+            <div className="text-center text-sm mb-6">
+              {isChangingPassword ? (
+                <div className="flex flex-col gap-2">
+                  {passwordError && <p className="text-red-500 text-xs">{passwordError}</p>}
+                  <input
+                    type="password"
+                    placeholder="Current password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="border rounded p-2 text-sm"
+                  />
+                  <input
+                    type="password"
+                    placeholder="New password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="border rounded p-2 text-sm"
+                  />
+                  <div className="flex justify-center gap-2">
+                    <button onClick={handleChangePassword} className="bg-blue-500 text-white px-3 py-1 rounded text-xs">
+                      Save
+                    </button>
+                    <button
+                      onClick={() => {
+                        setIsChangingPassword(false);
+                        setCurrentPassword('');
+                        setNewPassword('');
+                        setPasswordError('');
+                      }}
+                      className="bg-gray-200 text-gray-700 px-3 py-1 rounded text-xs"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button onClick={() => setIsChangingPassword(true)} className="text-blue-500 text-xs hover:underline">
+                  Change Password
+                </button>
+              )}
+            </div>
 
             {/* Description */}
             <div className="text-center text-sm mb-6">
