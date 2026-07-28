@@ -11,6 +11,7 @@ type Product = {
   user_id: number;
   username: string | null;
   profile_picture: string | null;
+  category: string;
   likes_count: string;
   is_liked: boolean;
 };
@@ -137,6 +138,7 @@ function ProductDetail() {
 
             <h1 className="text-2xl font-bold mb-2">{product.name}</h1>
             <p className="text-blue-500 text-xl font-semibold mb-4">${product.price}</p>
+            <p className="text-gray-400 text-xs mb-4">{product.category}</p>
 
             {product.description ? (
               <p className="text-gray-600 mb-6 break-words">{product.description}</p>

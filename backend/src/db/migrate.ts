@@ -27,8 +27,11 @@ const createTables = `
     description TEXT,
     price       NUMERIC(10,2) NOT NULL,
     image_url   TEXT,
+    category    VARCHAR(50) DEFAULT 'Other',
     created_at  TIMESTAMPTZ DEFAULT NOW()
   );
+
+  ALTER TABLE products ADD COLUMN IF NOT EXISTS category VARCHAR(50) DEFAULT 'Other';
 
   CREATE TABLE IF NOT EXISTS follows (
     follower_id  INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,

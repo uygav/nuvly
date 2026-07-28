@@ -1,13 +1,22 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { CATEGORIES } from '../constants/categories';
 
 type UserResult = { id: number; username: string; profile_picture: string | null };
-type ProductResult = { id: number; name: string; price: string; image_url: string | null; username: string | null };
+type ProductResult = {
+  id: number;
+  name: string;
+  price: string;
+  image_url: string | null;
+  category: string;
+  username: string | null;
+};
 
 function Search() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<'users' | 'products'>('users');
   const [query, setQuery] = useState('');
+  const [category, setCategory] = useState('');
   const [userResults, setUserResults] = useState<UserResult[]>([]);
   const [productResults, setProductResults] = useState<ProductResult[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
@@ -20,9 +29,10 @@ function Search() {
       });
       setUserResults(await res.json());
     } else {
-      const res = await fetch(`http://localhost:3001/products/search?q=${encodeURIComponent(query)}`, {
-        credentials: 'include',
-      });
+      const res = await fetch(
+        `http://localhost:3001/products/search?q=${encodeURIComponent(query)}&category=${encodeURIComponent(category)}`,
+        { credentials: 'include' }
+      );
       setProductResults(await res.json());
     }
   };
@@ -65,6 +75,20 @@ function Search() {
             placeholder={mode === 'users' ? 'Search by username...' : 'Search by product name...'}
             className="flex-1 border rounded p-2"
           />
+          {mode === 'products' && (
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="border rounded p-2 text-sm"
+            >
+              <option value="">All categories</option>
+              {CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          )}
           <button
             onClick={handleSearch}
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
@@ -115,6 +139,7 @@ function Search() {
                 </div>
                 <p className="font-semibold truncate">{p.name}</p>
                 <p className="text-blue-500 text-sm">${p.price}</p>
+                <p className="text-gray-400 text-xs">{p.category}</p>
                 <p className="text-gray-400 text-xs">@{p.username}</p>
               </div>
             ))}

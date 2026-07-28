@@ -1,16 +1,18 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { CATEGORIES } from '../constants/categories';
 
 function ProductSettings() {
   const navigate = useNavigate();
 
   const [products, setProducts] = useState<
-    { id: number; name: string; description: string | null; price: string; image_url: string | null }[]
+    { id: number; name: string; description: string | null; price: string; image_url: string | null; category: string }[]
   >([]);
 
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
+  const [category, setCategory] = useState(CATEGORIES[CATEGORIES.length - 1]);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -36,6 +38,7 @@ function ProductSettings() {
     setName(product.name);
     setDescription(product.description ?? '');
     setPrice(product.price);
+    setCategory(product.category);
     setImagePreview(product.image_url);
     setImageFile(null);
   };
@@ -45,6 +48,7 @@ function ProductSettings() {
     setName('');
     setDescription('');
     setPrice('');
+    setCategory(CATEGORIES[CATEGORIES.length - 1]);
     setImageFile(null);
     setImagePreview(null);
   };
@@ -66,6 +70,7 @@ function ProductSettings() {
     formData.append('name', name);
     formData.append('description', description);
     formData.append('price', price);
+    formData.append('category', category);
     if (imageFile) formData.append('image', imageFile);
 
     const res = await fetch(
@@ -120,6 +125,7 @@ function ProductSettings() {
                     </div>
                     <p className="font-semibold truncate">{product.name}</p>
                     <p className="text-blue-500 text-sm">${product.price}</p>
+                    <p className="text-gray-400 text-xs">{product.category}</p>
                     <div className="flex gap-2 mt-2">
                       <button onClick={() => handleEditClick(product)} className="text-xs text-blue-500 hover:underline">
                         Edit
@@ -182,6 +188,21 @@ function ProductSettings() {
                   onChange={(e) => setPrice(e.target.value)}
                   className="w-full border rounded p-2 text-sm"
                 />
+              </div>
+
+              <div>
+                <label className="text-sm text-gray-600 mb-1 block">Category</label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full border rounded p-2 text-sm"
+                >
+                  {CATEGORIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="flex gap-2 mt-2">

@@ -9,6 +9,7 @@ import Search from './pages/Search';
 import UserProfile from './pages/UserProfile';
 import ProductDetail from './pages/ProductDetail';
 import NotificationsPage from './pages/NotificationsPage';
+import CategoryProducts from './pages/CategoryProducts';
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
@@ -35,6 +36,7 @@ function App() {
         <Route path="/profile/:id" element={isLoggedIn ? <UserProfile /> : <Navigate to="/login" />} />
         <Route path="/products/:id" element={isLoggedIn ? <ProductDetail /> : <Navigate to="/login" />} />
         <Route path="/notifications" element={isLoggedIn ? <NotificationsPage /> : <Navigate to="/login" />} />
+        <Route path="/category/:name" element={isLoggedIn ? <CategoryProducts /> : <Navigate to="/login" />} />
       </Routes>
     </BrowserRouter>
   );

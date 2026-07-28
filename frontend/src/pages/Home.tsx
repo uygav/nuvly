@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { CATEGORIES } from '../constants/categories';
 
 type FeedProduct = {
   id: number;
@@ -18,6 +19,9 @@ function Home() {
   const [user, setUser] = useState<{ email: string } | null>(null);
   const [feed, setFeed] = useState<FeedProduct[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchUsers, setSearchUsers] = useState<{ id: number; username: string; profile_picture: string | null }[]>([]);
+  const [searchProducts, setSearchProducts] = useState<{ id: number; name: string; image_url: string | null }[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,6 +43,23 @@ function Home() {
       .then((res) => res.json())
       .then((data) => setUnreadCount(data.count));
   }, []);
+
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchUsers([]);
+      setSearchProducts([]);
+      return;
+    }
+    const timeout = setTimeout(() => {
+      fetch(`http://localhost:3001/users/search?q=${encodeURIComponent(searchQuery)}`, { credentials: 'include' })
+        .then((res) => res.json())
+        .then((data) => setSearchUsers(data));
+      fetch(`http://localhost:3001/products/search?q=${encodeURIComponent(searchQuery)}`, { credentials: 'include' })
+        .then((res) => res.json())
+        .then((data) => setSearchProducts(data));
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [searchQuery]);
 
   const handleLikeToggle = async (product: FeedProduct) => {
     const method = product.is_liked ? 'DELETE' : 'POST';
@@ -62,37 +83,96 @@ function Home() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Top Bar */}
-      <div className="flex justify-end gap-4 p-8">
-        <button
-          onClick={() => navigate('/notifications')}
-          className="relative bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
-        >
-          🔔
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-              {unreadCount}
-            </span>
+      {/* Top Row: Search + Nav */}
+      <div className="flex items-start justify-between gap-4 p-8">
+        {/* Live Search */}
+        <div className="flex-1 max-w-2xl relative">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search users or products..."
+            className="w-full border rounded p-2"
+          />
+          {(searchUsers.length > 0 || searchProducts.length > 0) && (
+            <div className="absolute left-0 right-0 bg-white border rounded shadow-md mt-1 z-10 max-h-80 overflow-y-auto">
+              {searchUsers.map((u) => (
+                <div
+                  key={`u-${u.id}`}
+                  onClick={() => {
+                    setSearchQuery('');
+                    navigate(`/profile/${u.id}`);
+                  }}
+                  className="flex items-center gap-2 p-2 hover:bg-gray-50 cursor-pointer"
+                >
+                  {u.profile_picture ? (
+                    <img src={u.profile_picture} className="w-6 h-6 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-6 h-6 rounded-full bg-gray-300" />
+                  )}
+                  <span className="text-sm">@{u.username}</span>
+                </div>
+              ))}
+              {searchProducts.map((p) => (
+                <div
+                  key={`p-${p.id}`}
+                  onClick={() => {
+                    setSearchQuery('');
+                    navigate(`/products/${p.id}`);
+                  }}
+                  className="flex items-center gap-2 p-2 hover:bg-gray-50 cursor-pointer"
+                >
+                  {p.image_url ? (
+                    <img src={p.image_url} className="w-6 h-6 rounded object-cover" />
+                  ) : (
+                    <div className="w-6 h-6 rounded bg-gray-300" />
+                  )}
+                  <span className="text-sm">{p.name}</span>
+                </div>
+              ))}
+            </div>
           )}
-        </button>
-        <button
-          onClick={() => navigate('/search')}
-          className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
-        >
-          Search
-        </button>
-        <button
-          onClick={() => navigate('/profile')}
-          className="bg-blue-500 text-white px-4 py-2 rounded"
-        >
-          Profile
-        </button>
-        <button
-          onClick={handleLogout}
-          className="bg-red-500 text-white px-4 py-2 rounded"
-        >
-          Logout
-        </button>
+
+          {/* Category shortcuts */}
+          <div className="flex gap-2 flex-wrap mt-3">
+            {CATEGORIES.map((c) => (
+              <button
+                key={c}
+                onClick={() => navigate(`/category/${encodeURIComponent(c)}`)}
+                className="px-3 py-1 rounded-full bg-gray-200 text-gray-700 text-xs hover:bg-gray-300"
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Nav buttons */}
+        <div className="flex gap-4 shrink-0">
+          <button
+            onClick={() => navigate('/notifications')}
+            className="relative bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
+          >
+            🔔
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {unreadCount}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => navigate('/profile')}
+            className="bg-blue-500 text-white px-4 py-2 rounded"
+          >
+            Profile
+          </button>
+          <button
+            onClick={handleLogout}
+            className="bg-red-500 text-white px-4 py-2 rounded"
+          >
+            Logout
+          </button>
+        </div>
       </div>
 
       {/* Feed */}

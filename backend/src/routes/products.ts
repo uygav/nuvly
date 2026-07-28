@@ -8,7 +8,7 @@ const router = Router()
 // GET MINE
 router.get('/mine', requireAuth, async (req: Request, res: Response) => {
     const result = await db.query(
-        'SELECT id, name, description, price, image_url, created_at FROM products WHERE user_id = $1 ORDER BY created_at DESC',
+        'SELECT id, name, description, price, image_url, category, created_at FROM products WHERE user_id = $1 ORDER BY created_at DESC',
         [(req as any).userId]
     )
     res.json(result.rows)
@@ -17,16 +17,24 @@ router.get('/mine', requireAuth, async (req: Request, res: Response) => {
 // SEARCH
 router.get('/search', requireAuth, async (req: Request, res: Response) => {
     const q = (req.query.q as string) || ''
+    const category = (req.query.category as string) || ''
+
+    const params: any[] = [`%${q}%`]
+    let categoryClause = ''
+    if (category) {
+        params.push(category)
+        categoryClause = `AND p.category = $${params.length}`
+    }
 
     const result = await db.query(
-        `SELECT p.id, p.name, p.price, p.image_url,
+        `SELECT p.id, p.name, p.price, p.image_url, p.category,
                 u.id AS user_id, u.username
          FROM products p
          JOIN users u ON u.id = p.user_id
-         WHERE p.name ILIKE $1
+         WHERE p.name ILIKE $1 ${categoryClause}
          ORDER BY p.created_at DESC
          LIMIT 20`,
-        [`%${q}%`]
+        params
     )
     res.json(result.rows)
 })
@@ -92,7 +100,7 @@ router.get('/user/:id', requireAuth, async (req: Request, res: Response) => {
 // GET BY ID (single product detail)
 router.get('/:id', requireAuth, async (req: Request, res: Response) => {
     const result = await db.query(
-        `SELECT p.id, p.name, p.description, p.price, p.image_url, p.created_at,
+        `SELECT p.id, p.name, p.description, p.price, p.image_url, p.category, p.created_at,
                 u.id AS user_id, u.username, u.profile_picture,
                 (SELECT COUNT(*) FROM likes WHERE product_id = p.id) AS likes_count,
                 EXISTS(SELECT 1 FROM likes WHERE product_id = p.id AND user_id = $2) AS is_liked
@@ -196,7 +204,7 @@ router.delete('/:id/comments/:commentId', requireAuth, async (req: Request, res:
 
 // CREATE
 router.post('/', requireAuth, upload.single('image'), async (req: Request, res: Response) => {
-    const { name, description, price } = req.body
+    const { name, description, price, category } = req.body
 
     if(!name || !price){
         res.status(400).json({message: 'name and price are required'})
@@ -206,15 +214,15 @@ router.post('/', requireAuth, upload.single('image'), async (req: Request, res: 
     const image_url = req.file ? `http://localhost:3001/uploads/${req.file.filename}` : null
 
     const result = await db.query(
-        'INSERT INTO products (user_id, name, description, price, image_url) VALUES ($1,$2,$3,$4,$5) RETURNING *',
-        [(req as any).userId, name, description, price, image_url]
+        'INSERT INTO products (user_id, name, description, price, image_url, category) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *',
+        [(req as any).userId, name, description, price, image_url, category || 'Other']
     )
     res.status(201).json(result.rows[0])
 })
 
 // UPDATE
 router.patch('/:id', requireAuth, upload.single('image'), async (req: Request, res: Response) => {
-    const { name, description, price } = req.body
+    const { name, description, price, category } = req.body
 
     const existing = await db.query(
         'SELECT * FROM products WHERE id = $1 AND user_id = $2',
@@ -228,8 +236,8 @@ router.patch('/:id', requireAuth, upload.single('image'), async (req: Request, r
     const image_url = req.file ? `http://localhost:3001/uploads/${req.file.filename}` : existing.rows[0].image_url
 
     const result = await db.query(
-        'UPDATE products SET name = $1, description = $2, price = $3, image_url = $4 WHERE id = $5 AND user_id = $6 RETURNING *',
-        [name, description, price, image_url, req.params.id, (req as any).userId]
+        'UPDATE products SET name = $1, description = $2, price = $3, image_url = $4, category = $5 WHERE id = $6 AND user_id = $7 RETURNING *',
+        [name, description, price, image_url, category || 'Other', req.params.id, (req as any).userId]
     )
     res.json(result.rows[0])
 })
