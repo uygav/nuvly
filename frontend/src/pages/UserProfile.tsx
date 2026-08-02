@@ -6,6 +6,7 @@ function UserProfile() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [followModal, setFollowModal] = useState<'followers' | 'following' | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
 
   const [user, setUser] = useState<{
     email: string;
@@ -36,6 +37,12 @@ function UserProfile() {
   }, [id]);
 
   useEffect(() => {
+    fetch('http://localhost:3001/auth/me', { credentials: 'include' })
+      .then((res) => res.json())
+      .then((data) => setCurrentUserId(data.id));
+  }, []);
+
+  useEffect(() => {
     fetch(`http://localhost:3001/products/user/${id}`, { credentials: 'include' })
       .then((res) => res.json())
       .then((data) => setProducts(data));
@@ -56,7 +63,8 @@ function UserProfile() {
   const handleFollowToggle = async () => {
     if (!user) return;
     const method = user.is_following ? 'DELETE' : 'POST';
-    await fetch(`http://localhost:3001/users/${id}/follow`, { method, credentials: 'include' });
+    const res = await fetch(`http://localhost:3001/users/${id}/follow`, { method, credentials: 'include' });
+    if (!res.ok) return;
     setUser({
       ...user,
       is_following: !user.is_following,
@@ -69,7 +77,7 @@ function UserProfile() {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between mb-8">
           <button
-            onClick={() => navigate('/search')}
+            onClick={() => navigate('/')}
             className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
           >
             ← Back
@@ -143,7 +151,7 @@ function UserProfile() {
               </p>
             )}
 
-            {user && (
+            {user && String(currentUserId) !== id && (
               <div className="flex justify-center mb-6">
                 <button
                   onClick={handleFollowToggle}

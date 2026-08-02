@@ -18,6 +18,7 @@ type FeedProduct = {
 function Home() {
   const [user, setUser] = useState<{ email: string } | null>(null);
   const [feed, setFeed] = useState<FeedProduct[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchUsers, setSearchUsers] = useState<{ id: number; username: string; profile_picture: string | null }[]>([]);
@@ -33,10 +34,13 @@ function Home() {
   }, []);
 
   useEffect(() => {
-    fetch('http://localhost:3001/products/feed', { credentials: 'include' })
+    const url = selectedCategory
+      ? `http://localhost:3001/products/all?category=${encodeURIComponent(selectedCategory)}`
+      : 'http://localhost:3001/products/all';
+    fetch(url, { credentials: 'include' })
       .then((res) => res.json())
       .then((data) => setFeed(data));
-  }, []);
+  }, [selectedCategory]);
 
   useEffect(() => {
     fetch('http://localhost:3001/notifications/unread-count', { credentials: 'include' })
@@ -135,11 +139,21 @@ function Home() {
 
           {/* Category shortcuts */}
           <div className="flex gap-2 flex-wrap mt-3">
-            {CATEGORIES.map((c) => (
+            <button
+              onClick={() => setSelectedCategory(null)}
+              className={`px-3 py-1 rounded-full text-xs ${
+                !selectedCategory ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              All
+            </button>
+            {CATEGORIES.filter((c) => c !== 'Other').map((c) => (
               <button
                 key={c}
-                onClick={() => navigate(`/category/${encodeURIComponent(c)}`)}
-                className="px-3 py-1 rounded-full bg-gray-200 text-gray-700 text-xs hover:bg-gray-300"
+                onClick={() => setSelectedCategory(c)}
+                className={`px-3 py-1 rounded-full text-xs ${
+                  selectedCategory === c ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
               >
                 {c}
               </button>
@@ -179,8 +193,7 @@ function Home() {
       <div className="max-w-5xl w-full mx-auto px-8 pb-8">
         {feed.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-96 text-gray-400 gap-1">
-            <p>Your feed is empty</p>
-            <p className="text-sm">Follow people to see their products here</p>
+            <p>No products yet</p>
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-6">

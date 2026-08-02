@@ -13,6 +13,7 @@ function ProductSettings() {
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [category, setCategory] = useState(CATEGORIES[CATEGORIES.length - 1]);
+  const [formError, setFormError] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -51,6 +52,7 @@ function ProductSettings() {
     setCategory(CATEGORIES[CATEGORIES.length - 1]);
     setImageFile(null);
     setImagePreview(null);
+    setFormError('');
   };
 
   const handleDelete = async (id: number) => {
@@ -64,7 +66,12 @@ function ProductSettings() {
   };
 
   const handleSave = async () => {
+    setFormError('');
     if (!name || !price) return;
+    if (!editingId && !imageFile) {
+      setFormError('Please select an image');
+      return;
+    }
 
     const formData = new FormData();
     formData.append('name', name);
@@ -143,6 +150,7 @@ function ProductSettings() {
           {/* Right side - Add Product */}
           <div className="bg-white p-8 rounded-lg shadow-md">
             <h2 className="text-2xl font-bold mb-6">{editingId ? 'Edit Product' : 'Add Product'}</h2>
+            {formError && <p className="text-red-500 text-sm mb-2">{formError}</p>}
 
             <div className="flex flex-col gap-4">
               <div>

@@ -83,6 +83,31 @@ router.get('/feed', requireAuth, async (req: Request, res: Response) => {
     res.json(result.rows)
 })
 
+// GET ALL (every product from every user)
+router.get('/all', requireAuth, async (req: Request, res: Response) => {
+    const category = (req.query.category as string) || ''
+    const params: any[] = [(req as any).userId]
+    let categoryClause = ''
+    if (category) {
+        params.push(category)
+        categoryClause = `WHERE p.category = $${params.length}`
+    }
+
+    const result = await db.query(
+        `SELECT p.id, p.name, p.description, p.price, p.image_url, p.category, p.created_at,
+                u.id AS user_id, u.username, u.profile_picture,
+                (SELECT COUNT(*) FROM likes WHERE product_id = p.id) AS likes_count,
+                (SELECT COUNT(*) FROM comments WHERE product_id = p.id) AS comments_count,
+                EXISTS(SELECT 1 FROM likes WHERE product_id = p.id AND user_id = $1) AS is_liked
+         FROM products p
+         JOIN users u ON u.id = p.user_id
+         ${categoryClause}
+         ORDER BY p.created_at DESC`,
+        params
+    )
+    res.json(result.rows)
+})
+
 // GET BY USER (public)
 router.get('/user/:id', requireAuth, async (req: Request, res: Response) => {
     const result = await db.query(
@@ -208,6 +233,11 @@ router.post('/', requireAuth, upload.single('image'), async (req: Request, res: 
 
     if(!name || !price){
         res.status(400).json({message: 'name and price are required'})
+        return
+    }
+
+    if (!req.file) {
+        res.status(400).json({ message: 'image is required' })
         return
     }
 
