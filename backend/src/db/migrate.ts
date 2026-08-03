@@ -72,6 +72,15 @@ const createTables = `
     PRIMARY KEY (user_id, comment_id)
   );
 
+  CREATE TABLE IF NOT EXISTS messages (
+    id          SERIAL PRIMARY KEY,
+    sender_id   INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    receiver_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    content     TEXT NOT NULL,
+    is_read     BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at  TIMESTAMPTZ DEFAULT NOW()
+  );
+
 `;
 
 async function migrate() {

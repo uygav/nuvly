@@ -6,6 +6,7 @@ import authRouter from './routes/auth'
 import productsRouter from './routes/products'
 import usersRouter from './routes/users'
 import notificationsRouter from './routes/notifications'
+import messagesRouter from './routes/messages'
 import { requireAuth } from './middleware/auth';
 import cors from 'cors';
 
@@ -33,6 +34,7 @@ app.use('/auth', authRouter)
 app.use('/products', productsRouter)
 app.use('/users', usersRouter)
 app.use('/notifications', notificationsRouter)
+app.use('/messages', messagesRouter)
 
 //middlewares
 app.get('/protected', requireAuth, (req, res) => {

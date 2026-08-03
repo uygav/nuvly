@@ -20,6 +20,7 @@ function Home() {
   const [feed, setFeed] = useState<FeedProduct[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadMessages, setUnreadMessages] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchUsers, setSearchUsers] = useState<{ id: number; username: string; profile_picture: string | null }[]>([]);
   const [searchProducts, setSearchProducts] = useState<{ id: number; name: string; image_url: string | null }[]>([]);
@@ -46,6 +47,12 @@ function Home() {
     fetch('http://localhost:3001/notifications/unread-count', { credentials: 'include' })
       .then((res) => res.json())
       .then((data) => setUnreadCount(data.count));
+  }, []);
+
+  useEffect(() => {
+    fetch('http://localhost:3001/messages/unread-count', { credentials: 'include' })
+      .then((res) => res.json())
+      .then((data) => setUnreadMessages(data.count));
   }, []);
 
   useEffect(() => {
@@ -163,6 +170,17 @@ function Home() {
 
         {/* Nav buttons */}
         <div className="flex gap-4 shrink-0">
+          <button
+            onClick={() => navigate('/messages')}
+            className="relative bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
+          >
+            💬
+            {unreadMessages > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {unreadMessages}
+              </span>
+            )}
+          </button>
           <button
             onClick={() => navigate('/notifications')}
             className="relative bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"

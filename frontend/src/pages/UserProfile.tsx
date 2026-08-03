@@ -152,7 +152,7 @@ function UserProfile() {
             )}
 
             {user && String(currentUserId) !== id && (
-              <div className="flex justify-center mb-6">
+              <div className="flex justify-center gap-2 mb-6">
                 <button
                   onClick={handleFollowToggle}
                   className={
@@ -162,6 +162,12 @@ function UserProfile() {
                   }
                 >
                   {user.is_following ? 'Unfollow' : 'Follow'}
+                </button>
+                <button
+                  onClick={() => navigate(`/messages/${id}`)}
+                  className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300"
+                >
+                  Message
                 </button>
               </div>
             )}

@@ -146,12 +146,22 @@ function ProductDetail() {
               <p className="text-gray-400 mb-6">No description</p>
             )}
 
-            <button
-              onClick={handleLikeToggle}
-              className={`flex items-center gap-1 text-lg ${product.is_liked ? 'text-red-500' : 'text-gray-400'}`}
-            >
-              {product.is_liked ? '♥' : '♡'} {product.likes_count}
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleLikeToggle}
+                className={`flex items-center gap-1 text-lg ${product.is_liked ? 'text-red-500' : 'text-gray-400'}`}
+              >
+                {product.is_liked ? '♥' : '♡'} {product.likes_count}
+              </button>
+              {currentUserId !== product.user_id && (
+                <button
+                  onClick={() => navigate(`/messages/${product.user_id}`)}
+                  className="bg-gray-200 text-gray-700 px-3 py-1 rounded text-sm hover:bg-gray-300"
+                >
+                  Message Seller
+                </button>
+              )}
+            </div>
 
             <div className="mt-8 border-t pt-6">
               <h2 className="font-semibold mb-4">Comments</h2>
